@@ -42,6 +42,20 @@ from aiogram.types import (
 )
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
+import os
+from aiohttp import web
+
+async def health(request):
+    return web.Response(text="ok")
+
+async def start_web():
+    app = web.Application()
+    app.router.add_get("/", health)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, "0.0.0.0", int(os.environ.get("PORT", 10000)))
+    await site.start()
+
 BOT_TOKEN = os.environ["BOT_TOKEN"]
 DB = os.getenv("DB_PATH", "bot.db")
 
@@ -1202,6 +1216,9 @@ async def main():
     ])
     await dp.start_polling(bot)
 
+async def main():
+    await start_web()                  # поднимаем веб-сервис
+    await dp.start_polling(bot)        # твой бот как раньше
 
 if __name__ == "__main__":
     asyncio.run(main())
